@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+    <class>org.igniterealtime.openfire.plugin.JidValidationPlugin</class>
+    <name>JID Validation</name>
+    <description>Provides support for JID Validation Service</description>
+    <author>Manasse Ngudia</author>
+    <version>1.0</version>
+    <date>11/09/2019</date>
+    <minServerVersion>4.3.2</minServerVersion>
+    <minJavaVersion>1.8</minJavaVersion>
+    <url>http://www.igniterealtime.org/projects/openfire/plugins.jsp</url>
+    <licenseType>gpl</licenseType>
+</plugin>
