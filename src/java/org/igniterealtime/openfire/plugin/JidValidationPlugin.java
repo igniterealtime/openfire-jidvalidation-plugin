@@ -21,6 +21,7 @@ package org.igniterealtime.openfire.plugin;
 import java.io.File;
 import java.security.Security;
 import java.util.Map;
+import java.util.Iterator;
 
 import org.jivesoftware.openfire.container.Plugin;
 import org.jivesoftware.openfire.container.PluginManager;
@@ -28,9 +29,14 @@ import org.jivesoftware.openfire.interceptor.InterceptorManager;
 import org.jivesoftware.openfire.interceptor.PacketInterceptor;
 import org.jivesoftware.openfire.interceptor.PacketRejectedException;
 import org.jivesoftware.openfire.session.Session;
+import org.jivesoftware.openfire.XMPPServer;
+import org.jivesoftware.openfire.container.Plugin;
+import org.jivesoftware.openfire.container.PluginManager;
 import org.jivesoftware.util.PropertyEventDispatcher;
 import org.jivesoftware.util.PropertyEventListener;
 import org.jivesoftware.util.JiveGlobals;
+
+import org.igniterealtime.openfire.plugin.JidValidationIQHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +54,8 @@ public class JidValidationPlugin implements Plugin, PropertyEventListener, Packe
     public static final String SERVICEENABLED = "plugin.jidvalidation.serviceEnabled";
 
     private boolean serviceEnabled;
+
+    private JidValidationIQHandler iqHandler;
 
     public JidValidationPlugin() {
         serviceEnabled = JiveGlobals.getBooleanProperty(SERVICEENABLED, true);
@@ -76,12 +84,29 @@ public class JidValidationPlugin implements Plugin, PropertyEventListener, Packe
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         Log.info("Initializing JID Validation Plugin");
         PropertyEventDispatcher.addListener(this);
+        Log.debug( "Registering IQ Handlers..." );
+        iqHandler = new JidValidationIQHandler();
+        XMPPServer.getInstance().getIQRouter().addHandler( iqHandler);
+        Log.debug( "Registering Server Features..." );
+        for ( final Iterator<String> it = iqHandler.getFeatures(); it.hasNext(); )
+        {
+            XMPPServer.getInstance().getIQDiscoInfoHandler().addServerFeature( it.next() );
+        }
     }
 
     @Override
     public void destroyPlugin() {
         PropertyEventDispatcher.removeListener(this);
         Log.info("Destroying JID Validation Plugin");
+        Log.debug( "Removing Server Features..." );
+        for ( final Iterator<String> it = iqHandler.getFeatures(); it.hasNext(); )
+        {
+            XMPPServer.getInstance().getIQDiscoInfoHandler().removeServerFeature( it.next() );
+        }
+        if ( iqHandler != null ){
+            Log.debug( "Removing IQ Handler..." );
+            XMPPServer.getInstance().getIQRouter().removeHandler( iqHandler);
+        }   
     }
 
     @Override
