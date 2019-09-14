@@ -10,4 +10,14 @@
     <minJavaVersion>1.8</minJavaVersion>
     <url>http://www.igniterealtime.org/projects/openfire/plugins.jsp</url>
     <licenseType>gpl</licenseType>
+
+    <adminconsole>
+        <tab id="tab-server">
+            <sidebar id="sidebar-server-settings">
+                <item id="jidvalidation-props-edit-form" name="${jidvalidation.props.edit.form.title}"
+                    url="jidvalidation-props-edit-form.jsp"
+                    description="${jidvalidation.props.edit.form.description}" />
+            </sidebar>
+        </tab>
+    </adminconsole>
 </plugin>
