@@ -19,19 +19,12 @@
 package org.igniterealtime.openfire.plugin;
 
 import java.io.File;
-import java.security.Security;
 import java.util.Map;
 import java.util.Iterator;
 
 import org.jivesoftware.openfire.container.Plugin;
 import org.jivesoftware.openfire.container.PluginManager;
-import org.jivesoftware.openfire.interceptor.InterceptorManager;
-import org.jivesoftware.openfire.interceptor.PacketInterceptor;
-import org.jivesoftware.openfire.interceptor.PacketRejectedException;
-import org.jivesoftware.openfire.session.Session;
 import org.jivesoftware.openfire.XMPPServer;
-import org.jivesoftware.openfire.container.Plugin;
-import org.jivesoftware.openfire.container.PluginManager;
 import org.jivesoftware.util.PropertyEventDispatcher;
 import org.jivesoftware.util.PropertyEventListener;
 import org.jivesoftware.util.JiveGlobals;
@@ -40,7 +33,7 @@ import org.igniterealtime.openfire.plugin.JidValidationIQHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xmpp.packet.Packet;
+
 
 /**
  * An Openfire plugin that implements XEP-0328: JID Validation Service
@@ -48,7 +41,7 @@ import org.xmpp.packet.Packet;
  * @see <a href="http://geekplace.eu/xeps/xep-jidprep/xep-jidprep.html">XEP-0328 :JID Validation</a>.
  * @author <a href="mailto:ngudiamanasse@gmail.com">Manasse Ngudia</a>
  */
-public class JidValidationPlugin implements Plugin, PropertyEventListener, PacketInterceptor {
+public class JidValidationPlugin implements Plugin, PropertyEventListener {
     private static final Logger Log = LoggerFactory.getLogger(JidValidationPlugin.class);
 
     public static final String SERVICEENABLED = "plugin.jidvalidation.serviceEnabled";
@@ -133,18 +126,6 @@ public class JidValidationPlugin implements Plugin, PropertyEventListener, Packe
     @Override
     public void xmlPropertySet(String arg0, Map<String, Object> arg1) {
         // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void interceptPacket(Packet packet, Session session, boolean incoming, boolean processed) throws PacketRejectedException {
-        // TODO Auto-generated method stub
-        if(!serviceEnabled){
-            Log.info("JID Validation Plugin enabled");
-        }else{
-            Log.info("JID Validation Plugin disabled");
-
-        }
 
     }
 }
