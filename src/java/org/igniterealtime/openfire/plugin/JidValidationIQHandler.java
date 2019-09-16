@@ -51,7 +51,6 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
     private static final String ELEMENT_RESULT = "jid-validate-result";
     private static final String NAMESPACE = "urn:xmpp:jidprep:1";
     private final IQHandlerInfo info;
-    private static boolean jidvalidationEnabled;
 
     public static SystemProperty<Boolean> PROPERTY_ENABLED = SystemProperty.Builder.ofType( Boolean.class )
         .setKey( "plugin.jidvalidation.serviceEnabled" )
