@@ -19,21 +19,7 @@
 package org.igniterealtime.openfire.plugin;
 
 import java.io.File;
-import java.util.Map;
 import java.util.Iterator;
-import java.util.Collections;
-
-import org.xmpp.packet.IQ;
-import org.xmpp.packet.PacketError;
-import org.xmpp.packet.JID;
-import org.dom4j.DocumentHelper;
-import org.dom4j.Element;
-import org.dom4j.QName;
-
-import org.jivesoftware.openfire.IQHandlerInfo;
-import org.jivesoftware.openfire.auth.UnauthorizedException;
-import org.jivesoftware.openfire.disco.ServerFeaturesProvider;
-import org.jivesoftware.openfire.handler.IQHandler;
 
 import org.jivesoftware.openfire.container.Plugin;
 import org.jivesoftware.openfire.container.PluginManager;

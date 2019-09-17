@@ -25,7 +25,6 @@ import org.jivesoftware.openfire.handler.IQHandler;
 import org.jivesoftware.util.SystemProperty;
 
 import org.xmpp.packet.IQ;
-import org.xmpp.packet.PacketError;
 import org.xmpp.packet.JID;
 import org.xmpp.packet.PacketError.Condition;
 import org.dom4j.DocumentHelper;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 
 /**
  * An IQ handler that implements XEP-0328: JID Validation Service.
@@ -54,8 +52,8 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
 
     public static SystemProperty<Boolean> PROPERTY_ENABLED = SystemProperty.Builder.ofType( Boolean.class )
         .setKey( "plugin.jidvalidation.serviceEnabled" )
-        .setDynamic( true )
-        .setDefaultValue( true )
+        .setDefaultValue( Boolean.TRUE)
+        .setDynamic(Boolean.TRUE)
         .build(); 
 
     public JidValidationIQHandler() {
@@ -85,8 +83,7 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
 
 	@Override
 	public IQ handleIQ(IQ packet) throws UnauthorizedException {
-        Log.info("INCOME : "+packet.toString());
-        IQ response = IQ.createResultIQ(packet);
+        final IQ response = IQ.createResultIQ(packet);
         JID jid = null;
 
         if ( !PROPERTY_ENABLED.getValue() )
@@ -117,21 +114,18 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
                                 validElement.addElement("resourcepart").setText(jid.getResource()); 
                                 response.setChildElement(resultElement);
                             }
-                            Log.info("RETURN VALID: "+response.toString());
                             return response;
                         } catch (Exception e) {
                             Element resultElement = DocumentHelper.createElement(QName.get(ELEMENT_RESULT, info.getNamespace()));
                             Element invalidElement =  resultElement.addElement("invalid-jid");
                             invalidElement.addElement("reason").setText(e.getMessage());
                             response.setChildElement(resultElement);
-                            Log.info("RETURN INVALID : "+response.toString());
                             return response;
                         }
                         
                     }
             }
         }
-        Log.info("RETURN : "+response.toString());
         return response;
     }
 
