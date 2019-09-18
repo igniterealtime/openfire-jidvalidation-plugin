@@ -1,4 +1,4 @@
-    
+
 /** 
  * Copyright (C) 2019 IgniterRealTime. All rights reserved.
  *
@@ -14,7 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 
 package org.igniterealtime.openfire.plugin;
 
@@ -39,16 +38,17 @@ import org.slf4j.LoggerFactory;
  */
 public class JidValidationPlugin implements Plugin {
     private static final Logger Log = LoggerFactory.getLogger(JidValidationPlugin.class);
-    public static final String SERVICEENABLED = "plugin.jidvalidation.serviceEnabled";
-    private JidValidationIQHandler iqHandler;
+    private JidValidationIQHandler iqHandler = null;
     
     @Override
     public void initializePlugin(PluginManager manager, File pluginDirectory) {
         Log.info("Initializing JID Validation Plugin");
-        iqHandler = new JidValidationIQHandler();
-        XMPPServer.getInstance().getIQRouter().addHandler(iqHandler);
-        for (final Iterator<String> it = iqHandler.getFeatures(); it.hasNext();) {
-            XMPPServer.getInstance().getIQDiscoInfoHandler().addServerFeature(it.next());
+        if(iqHandler == null){
+            iqHandler = new JidValidationIQHandler();
+            XMPPServer.getInstance().getIQRouter().addHandler(iqHandler);
+            for (final Iterator<String> it = iqHandler.getFeatures(); it.hasNext();) {
+                XMPPServer.getInstance().getIQDiscoInfoHandler().addServerFeature(it.next());
+            }
         }
     }
 
@@ -63,4 +63,5 @@ public class JidValidationPlugin implements Plugin {
         }
     }
 
+    
 }

@@ -17,10 +17,10 @@
 
 package org.igniterealtime.openfire.plugin;
 
-
 import org.jivesoftware.openfire.IQHandlerInfo;
 import org.jivesoftware.openfire.auth.UnauthorizedException;
 import org.jivesoftware.openfire.disco.ServerFeaturesProvider;
+import org.jivesoftware.openfire.XMPPServer;
 import org.jivesoftware.openfire.handler.IQHandler;
 import org.jivesoftware.util.SystemProperty;
 
@@ -35,6 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+
 
 /**
  * An IQ handler that implements XEP-0328: JID Validation Service.
@@ -44,20 +46,24 @@ import java.util.Iterator;
  */
 public class JidValidationIQHandler extends IQHandler  implements ServerFeaturesProvider{
     private static final Logger Log = LoggerFactory.getLogger( JidValidationIQHandler.class );
-
+    public static final String  SERVICEENABLED = "plugin.jidvalidation.serviceEnabled";
     private static final String ELEMENT_REQUEST = "jid-validate-request";
     private static final String ELEMENT_RESULT = "jid-validate-result";
     private static final String NAMESPACE = "urn:xmpp:jidprep:1";
     private final IQHandlerInfo info;
 
-    public static SystemProperty<Boolean> PROPERTY_ENABLED = SystemProperty.Builder.ofType( Boolean.class )
-        .setKey( "plugin.jidvalidation.serviceEnabled" )
-        .setDefaultValue( Boolean.TRUE)
-        .setDynamic(Boolean.TRUE)
-        .build(); 
+    private SystemProperty<Boolean> PROPERTY_ENABLED ;
 
     public JidValidationIQHandler() {
         super( "XEP-0328: JID Validation Service" );
+        if(!SystemProperty.getProperty(SERVICEENABLED).isPresent()){
+            PROPERTY_ENABLED = SystemProperty.Builder.ofType( Boolean.class )
+                                .setKey( SERVICEENABLED )
+                                .setDefaultValue( Boolean.TRUE)
+                                .setDynamic(Boolean.TRUE)
+                                .addListener(JidValidationIQHandler::onChangeSystemProperty)
+                                .build();
+        }
         info = new IQHandlerInfo(ELEMENT_REQUEST, NAMESPACE);
     }
 
@@ -74,10 +80,6 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
 
     @Override
 	public Iterator<String> getFeatures() {
-        if ( !PROPERTY_ENABLED.getValue() )
-        {
-            return null;
-        }
 	    return Collections.singleton( info.getNamespace() ).iterator();
 	}
 
@@ -85,11 +87,23 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
 	public IQ handleIQ(IQ packet) throws UnauthorizedException {
         final IQ response = IQ.createResultIQ(packet);
         JID jid = null;
-
         if ( !PROPERTY_ENABLED.getValue() )
         {
             Log.debug( "Unable to process request: service has been disabled by configuration." );
             response.setError( Condition.service_unavailable );
+            return response;
+        }
+        if ( packet.isResponse() )
+        {
+            Log.debug( "Responding with an error to an IQ request of type 'error' or''result': {}", packet );
+            response.setError(Condition.service_unavailable );
+            return response;
+        }
+
+        if ( IQ.Type.set == packet.getType() )
+        {
+            Log.debug( "Responding with an error to an IQ request of type 'set': {}", packet );
+            response.setError(Condition.service_unavailable );
             return response;
         }
 
@@ -106,14 +120,12 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
                         String jidToCheck= dataElement.getStringValue();
                         try {
                             jid = new JID(jidToCheck);
-                            if(jid != null){
-                                Element resultElement = DocumentHelper.createElement(QName.get(ELEMENT_RESULT, info.getNamespace()));
-                                Element validElement =  resultElement.addElement("valid-jid");
-                                validElement.addElement("localpart").setText(jid.getNode());
-                                validElement.addElement("domainpart").setText(jid.getDomain());
-                                validElement.addElement("resourcepart").setText(jid.getResource()); 
-                                response.setChildElement(resultElement);
-                            }
+                            Element resultElement = DocumentHelper.createElement(QName.get(ELEMENT_RESULT, info.getNamespace()));
+                            Element validElement =  resultElement.addElement("valid-jid");
+                            validElement.addElement("localpart").setText(jid.getNode());
+                            validElement.addElement("domainpart").setText(jid.getDomain());
+                            validElement.addElement("resourcepart").setText(jid.getResource()); 
+                            response.setChildElement(resultElement);
                             return response;
                         } catch (Exception e) {
                             Element resultElement = DocumentHelper.createElement(QName.get(ELEMENT_RESULT, info.getNamespace()));
@@ -126,7 +138,34 @@ public class JidValidationIQHandler extends IQHandler  implements ServerFeatures
                     }
             }
         }
+        Log.debug( "Responding with an error to an IQ request if something fails or an unexpected element" );
+        response.setError(Condition.service_unavailable );
         return response;
     }
 
+    public static void onChangeSystemProperty(final boolean enabled) {
+        try {
+            if(!enabled){
+                List<IQHandler> iqHandlers = XMPPServer.getInstance().getIQHandlers();
+                for(IQHandler iqHandlerIn : iqHandlers){
+                    if (iqHandlerIn instanceof JidValidationIQHandler){
+                        JidValidationIQHandler iqHandlerJid =  (JidValidationIQHandler) iqHandlerIn;
+                        //remove iqHandler to server
+                        for (final Iterator<String> it = iqHandlerJid.getFeatures(); it.hasNext();) {
+                            XMPPServer.getInstance().getIQDiscoInfoHandler().removeServerFeature(it.next());
+                        }
+                        XMPPServer.getInstance().getIQRouter().removeHandler(iqHandlerJid);
+                    }
+                }
+            }else{
+                JidValidationIQHandler iqHandlerAdd = new JidValidationIQHandler();
+                XMPPServer.getInstance().getIQRouter().addHandler(iqHandlerAdd);
+                for (final Iterator<String> it = iqHandlerAdd.getFeatures(); it.hasNext();) {
+                    XMPPServer.getInstance().getIQDiscoInfoHandler().addServerFeature(it.next());
+                }
+            }
+        } catch (Exception e) {
+            Log.debug( "onChangeSystemProperty {} "+e.toString());
+        }
+    }
 }
