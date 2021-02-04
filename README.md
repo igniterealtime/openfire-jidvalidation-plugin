@@ -6,6 +6,10 @@ The JID Validation plugin adds JID Validation <a href="http://geekplace.eu/xeps/
 capabilities to Openfire. This plugin is designed to work with various Jabber clients to allow other users to prepare and validate a given JID.
 
 
+## CI Build Status
+
+[![Build Status](https://github.com/igniterealtime/openfire-jidvalidation-plugin/workflows/Java%20CI/badge.svg)](https://github.com/igniterealtime/openfire-jidvalidation-plugin/actions)
+
 ## Installation</h2>
 
 Copy the file, &quot;jidvalidation.jar&quot; into the plugins directory of your Openfire installation. The plugin will
