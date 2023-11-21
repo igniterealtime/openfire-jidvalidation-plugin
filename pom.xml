@@ -8,7 +8,7 @@
     </parent>
     <groupId>org.igniterealtime.openfire.plugins</groupId>
 	<artifactId>jidvalidation</artifactId>
-	<version>1.0.0</version>
+	<version>1.0.1-SNAPSHOT</version>
     <name>JID Validation</name>
     <description>Plugin to allow JID validation feature in Openfire</description>
 
